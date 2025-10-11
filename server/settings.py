@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'menuapp', 
+    'drf_yasg',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -145,4 +147,18 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
 
 
 AUTH_USER_MODEL = 'menuapp.CustomUser'
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'TokenAuth': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    }
+}
+
+import os
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
