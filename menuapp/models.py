@@ -1,12 +1,28 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
+import uuid
 
 
-class User(AbstractUser):
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True)
     is_admin = models.BooleanField(default=False)
     
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
     def __str__(self):
-        return self.username
+        return self.email
+
+
+class EmailConfirmation(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Confirmation for {self.user.email}"
+
 
 
 class Category(models.Model):
@@ -31,7 +47,7 @@ class Dish(models.Model):
 
 
 class Review(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
     dish = models.ForeignKey(Dish, on_delete=models.CASCADE, related_name='reviews')
     text = models.TextField()
     created_at = models.DateTimeField( auto_now_add=True)
