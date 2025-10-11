@@ -11,6 +11,10 @@ from rest_framework import viewsets, permissions
 from .permissions import IsAdminOrReadOnly, IsOwnerOrAdmin
 from rest_framework.generics import GenericAPIView
 from rest_framework.parsers import MultiPartParser, FormParser
+from .filters import DishFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+
 
 
 class RegisterView(generics.CreateAPIView):
@@ -71,6 +75,8 @@ class DishViewSet(viewsets.ModelViewSet):
     serializer_class = DishSerializer
     permission_classes = [IsAdminOrReadOnly]
     parser_classes = [MultiPartParser, FormParser]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = DishFilter
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
