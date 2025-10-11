@@ -9,6 +9,9 @@ from rest_framework.response import Response
 from django.contrib.auth import  logout
 from rest_framework import viewsets, permissions
 from .permissions import IsAdminOrReadOnly, IsOwnerOrAdmin
+from rest_framework.generics import GenericAPIView
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -30,7 +33,8 @@ class EmailConfirmView(APIView):
 
 
 
-class LoginView(APIView):
+class LoginView(GenericAPIView):
+    serializer_class = LoginSerializer
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -39,7 +43,6 @@ class LoginView(APIView):
             user = serializer.validated_data['user']
             refresh = RefreshToken.for_user(user) 
             refresh['email'] = user.email
-
             return Response({
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
@@ -67,6 +70,7 @@ class DishViewSet(viewsets.ModelViewSet):
     queryset = Dish.objects.all()
     serializer_class = DishSerializer
     permission_classes = [IsAdminOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser]
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -82,3 +86,4 @@ class ReviewViewSet(viewsets.ModelViewSet):
         if user.is_admin:
             return Review.objects.all()
         return Review.objects.filter(user=user)
+
