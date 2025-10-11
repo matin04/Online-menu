@@ -1,13 +1,14 @@
 from django.shortcuts import render
-from .models import CustomUser, EmailConfirmation
-from .serializers import RegisterSerializer, LoginSerializer
+from .models import *
+from .serializers import *
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import  logout
-
+from rest_framework import viewsets, permissions
+from .permissions import IsAdminOrReadOnly, IsOwnerOrAdmin
 
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -55,3 +56,29 @@ class LogoutView(APIView):
         logout(request)
         return Response({'message': 'Logged out successfully!'}, status=200)
 
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+
+class DishViewSet(viewsets.ModelViewSet):
+    queryset = Dish.objects.all()
+    serializer_class = DishSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_admin:
+            return Review.objects.all()
+        return Review.objects.filter(user=user)
