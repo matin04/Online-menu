@@ -21,7 +21,10 @@ class DishSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dish
         fields = ['id', 'name', 'description', 'price', 'category', 'category_name', 'image', 'video', 'is_active', 'created_at']
-    
+        extra_kwargs = {
+            'image': {'required': False},
+            'video': {'required': False}
+        }
 
 class ReviewSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.username', read_only=True)
@@ -29,7 +32,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['id', 'user', 'user_name', 'dish', 'dish_name', 'text', 'created_at']
+        fields = ['id', 'user_name', 'dish', 'dish_name', 'text', 'created_at']
 
 
 
@@ -42,10 +45,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'password']
 
     def create(self, validated_data):
-        user = CustomUser.objects.create_user(**validated_data)
+        password = validated_data.pop('password')
+        user = CustomUser(**validated_data)
+        user.set_password(password)
         user.is_active = False
         user.save()
-        confirm = EmailConfirmation.objects.create(user = user)
+        confirm = EmailConfirmation.objects.create(user=user)
         self.send_email_confirmation(user.email, confirm.token)
         return user
 
@@ -70,7 +75,7 @@ class LoginSerializer(serializers.Serializer):
         email = data.get('email')
         password = data.get('password')
         
-        user = authenticate(email=email, password=password)
+        user = authenticate(username=email, password=password)
         
         if not user:
             raise serializers.ValidationError("Invalid credentials")

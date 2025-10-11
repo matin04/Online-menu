@@ -150,13 +150,16 @@ AUTH_USER_MODEL = 'menuapp.CustomUser'
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
-        'TokenAuth': {
+        'Bearer': {
             'type': 'apiKey',
+            'name': 'Authorization',
             'in': 'header',
-            'name': 'Authorization'
+            'description': 'Format: Bearer <your_token>'
         }
-    }
+    },
+    'USE_SESSION_AUTH': False,
 }
+
 
 import os
 MEDIA_URL = '/media/'
